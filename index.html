@@ -1,0 +1,1399 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ShopEase - ho-Style E-Commerce Replica</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Lucide Icons CDN -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
+        body { font-family: 'Inter', sans-serif; }
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+    </style>
+</head>
+<body class="bg-gray-50 text-gray-800 min-h-screen flex flex-col selection:bg-pink-600 selection:text-white">
+
+    <!-- Toast Notification -->
+    <div id="toast" class="fixed bottom-6 right-6 z-50 bg-gray-900 text-white px-5 py-3 rounded-2xl shadow-2xl flex items-center gap-3 transform translate-y-32 opacity-0 transition-all duration-300">
+        <i data-lucide="sparkles" class="w-5 h-5 text-pink-400"></i>
+        <span id="toast-text" class="text-xs sm:text-sm font-semibold"></span>
+    </div>
+
+    <!-- Top Announcement Bar -->
+    <div class="bg-gradient-to-r from-pink-600 to-purple-700 text-white text-xs py-2 px-4 text-center font-medium tracking-wide">
+        🎉 Lowest Prices & Free Delivery on All Products! • Demo Pricing Strictly ₹1 to ₹10 • 220+ Unique Products
+    </div>
+
+    <!-- Header -->
+    <header class="sticky top-0 z-40 bg-white border-b border-gray-200 shadow-sm">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between h-16 sm:h-20 gap-4">
+                
+                <!-- Logo & Mobile Menu Toggle -->
+                <div class="flex items-center gap-3">
+                    <button onclick="toggleMobileMenu()" class="lg:hidden p-2 text-gray-700 hover:text-pink-600 focus:outline-none">
+                        <i data-lucide="menu" class="w-6 h-6"></i>
+                    </button>
+
+                    <div onclick="switchView('home')" class="cursor-pointer flex items-center gap-2">
+                        <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-pink-600 to-purple-600 flex items-center justify-center text-white shadow-md shadow-pink-500/20">
+                            <i data-lucide="shopping-bag" class="w-5 h-5"></i>
+                        </div>
+                        <div>
+                            <span class="text-xl sm:text-2xl font-black tracking-tight bg-gradient-to-r from-pink-600 to-purple-700 bg-clip-text text-transparent">
+                                ShopEase
+                            </span>
+                            <span class="hidden sm:block text-[9px] uppercase tracking-widest text-gray-400 font-bold">
+                                
+                            </span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Search Bar -->
+                <div class="flex-1 max-w-2xl mx-2 sm:mx-6">
+                    <div class="relative">
+                        <span class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-gray-400">
+                            <i data-lucide="search" class="w-4 h-4 sm:w-5 sm:h-5"></i>
+                        </span>
+                        <input
+                            type="text"
+                            id="search-input"
+                            oninput="handleSearchInput(this.value)"
+                            placeholder="Try Saree, Kurti, Watch, Toys, Gadgets & more..."
+                            class="w-full pl-10 sm:pl-12 pr-10 py-2 sm:py-2.5 bg-gray-100 border border-transparent rounded-full text-xs sm:text-sm focus:bg-white focus:border-pink-500 focus:ring-2 focus:ring-pink-500/20 transition-all outline-none"
+                        />
+                        <button onclick="clearSearch()" id="clear-search-btn" class="hidden absolute inset-y-0 right-0 pr-3 items-center text-gray-400 hover:text-gray-600">
+                            <i data-lucide="x" class="w-4 h-4"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Right Action Icons -->
+                <div class="flex items-center gap-2 sm:gap-4">
+                    
+                    <!-- Profile / Login Button -->
+                    <button onclick="openAuthModal()" class="flex items-center gap-2 p-2 sm:px-3 sm:py-2 rounded-xl hover:bg-gray-100 transition text-gray-700 font-medium text-xs sm:text-sm">
+                        <div id="user-avatar" class="w-8 h-8 rounded-full bg-pink-100 text-pink-700 flex items-center justify-center font-bold text-xs">
+                            <i data-lucide="user" class="w-4 h-4"></i>
+                        </div>
+                        <div class="hidden md:block text-left">
+                            <div class="text-[10px] text-gray-500 uppercase font-semibold">Profile</div>
+                            <div id="user-name-display" class="text-xs font-bold truncate max-w-[90px]">Sign In</div>
+                        </div>
+                    </button>
+
+                    <!-- Demo Orders -->
+                    <button onclick="switchView('orders')" class="hidden sm:flex items-center gap-1.5 px-3 py-2 rounded-xl hover:bg-gray-100 transition text-gray-700 text-xs sm:text-sm font-medium">
+                        <i data-lucide="package" class="w-5 h-5 text-gray-500"></i>
+                        <span>Orders (<span id="orders-count-badge">0</span>)</span>
+                    </button>
+
+                    <!-- Cart Button -->
+                    <button onclick="switchView('cart')" class="relative flex items-center gap-2 bg-pink-600 hover:bg-pink-700 text-white px-3 sm:px-4 py-2 sm:py-2.5 rounded-xl transition shadow-md shadow-pink-600/30 font-medium text-xs sm:text-sm">
+                        <i data-lucide="shopping-bag" class="w-4 h-4 sm:w-5 sm:h-5"></i>
+                        <span class="hidden sm:inline">Cart</span>
+                        <span id="cart-count-badge" class="absolute -top-2 -right-2 bg-yellow-400 text-gray-950 font-black text-xs w-5 h-5 rounded-full flex items-center justify-center shadow hidden">0</span>
+                    </button>
+
+                </div>
+            </div>
+        </div>
+
+        <!-- Desktop Categories Navigation Bar -->
+        <div class="hidden lg:block border-t border-gray-100 bg-white">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div id="desktop-categories" class="flex items-center space-x-1 overflow-x-auto py-2.5 no-scrollbar">
+                    <!-- Populated via JS -->
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Mobile Drawer Menu -->
+    <div id="mobile-drawer" class="fixed inset-0 z-50 lg:hidden flex hidden">
+        <div class="fixed inset-0 bg-black/50" onclick="toggleMobileMenu()"></div>
+        <div class="relative w-80 max-w-full bg-white h-full shadow-2xl flex flex-col z-10 p-6 overflow-y-auto">
+            <div class="flex items-center justify-between mb-6 pb-4 border-b border-gray-100">
+                <div class="flex items-center gap-2">
+                    <div class="w-8 h-8 rounded-lg bg-pink-600 text-white flex items-center justify-center font-bold">SE</div>
+                    <span class="font-bold text-lg">ShopEase Menu</span>
+                </div>
+                <button onclick="toggleMobileMenu()" class="p-1 text-gray-500"><i data-lucide="x" class="w-6 h-6"></i></button>
+            </div>
+
+            <div class="space-y-3 mb-6">
+                <button onclick="switchView('home'); toggleMobileMenu();" class="w-full text-left px-3 py-2 rounded-lg font-medium text-gray-800 hover:bg-gray-100 flex items-center gap-3">
+                    <i data-lucide="home" class="w-5 h-5 text-pink-600"></i> Home
+                </button>
+                <button onclick="switchView('orders'); toggleMobileMenu();" class="w-full text-left px-3 py-2 rounded-lg font-medium text-gray-800 hover:bg-gray-100 flex items-center gap-3">
+                    <i data-lucide="package" class="w-5 h-5 text-purple-600"></i> Demo Orders (<span id="mobile-orders-count">0</span>)
+                </button>
+                <button onclick="switchView('cart'); toggleMobileMenu();" class="w-full text-left px-3 py-2 rounded-lg font-medium text-gray-800 hover:bg-gray-100 flex items-center gap-3">
+                    <i data-lucide="shopping-bag" class="w-5 h-5 text-pink-600"></i> Cart (<span id="mobile-cart-count">0</span>)
+                </button>
+            </div>
+
+            <div class="border-t border-gray-100 pt-4">
+                <h3 class="text-xs font-bold uppercase tracking-wider text-gray-400 mb-3">All 18 Categories</h3>
+                <div id="mobile-categories" class="space-y-1">
+                    <!-- Populated via JS -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Container -->
+    <main class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6">
+        
+        <!-- VIEW 1: HOME (Hero, Categories Grid, Products Grid) -->
+        <div id="view-home" class="space-y-8">
+            
+            <!-- Hero Banner -->
+            <div class="relative rounded-3xl overflow-hidden bg-gradient-to-r from-purple-900 via-pink-700 to-pink-600 text-white p-6 sm:p-12 shadow-xl flex flex-col md:flex-row items-center justify-between gap-6">
+                <div class="space-y-4 max-w-xl text-center md:text-left">
+                    <span class="bg-yellow-400 text-gray-950 font-black text-xs px-3 py-1 rounded-full uppercase tracking-wider">
+                        Massive Catalog • 220+ Products
+                    </span>
+                    <h1 class="text-3xl sm:text-5xl font-black tracking-tight leading-tight">
+                        Lowest Prices on Fashion, Electronics & Home!
+                    </h1>
+                    <p class="text-pink-100 text-xs sm:text-sm leading-relaxed">
+                        Explore 220+ distinct, individually named products across 18 specialized categories — each with its own unique photo, strictly priced between ₹1 and ₹10.
+                    </p>
+                    <div class="pt-2">
+                        <button onclick="scrollToProducts()" class="bg-white text-pink-700 hover:bg-pink-50 font-bold px-6 py-3 rounded-xl shadow-lg transition text-xs sm:text-sm">
+                            Shop 220+ Products Now
+                        </button>
+                    </div>
+                </div>
+                <div class="w-full md:w-auto flex justify-center">
+                    <div class="w-48 sm:w-64 aspect-square rounded-2xl overflow-hidden shadow-2xl border-4 border-white/20">
+                        <img src="https://images.unsplash.com/photo-1483985988355-763728e1935b?auto=format&fit=crop&w=600&q=80" alt="Hero Shopping" class="w-full h-full object-cover">
+                    </div>
+                </div>
+            </div>
+
+            <!-- Categories Horizontal Grid -->
+            <div class="space-y-3">
+                <div class="flex items-center justify-between">
+                    <h2 class="text-lg sm:text-xl font-black tracking-tight text-gray-900">Shop By Category (18 Categories)</h2>
+                    <span class="text-xs font-semibold text-pink-600">Unique Items & Photos</span>
+                </div>
+                <div id="categories-grid" class="grid grid-cols-3 sm:grid-cols-6 lg:grid-cols-9 gap-2 sm:gap-3">
+                    <!-- Populated via JS -->
+                </div>
+            </div>
+
+            <!-- Filter & Sort Bar -->
+            <div id="product-catalog-section" class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 pt-4 border-t border-gray-100">
+                <div class="flex items-center gap-2">
+                    <h2 id="current-category-title" class="text-lg sm:text-xl font-black text-gray-900">All Products</h2>
+                    <span id="product-count-badge" class="text-xs bg-gray-100 text-gray-600 px-2.5 py-1 rounded-full font-bold">0 Items</span>
+                </div>
+
+                <div class="flex items-center gap-3 w-full sm:w-auto">
+                    <div id="active-filter-tag" class="hidden items-center gap-2 bg-pink-50 text-pink-700 px-3 py-1.5 rounded-lg text-xs font-bold">
+                        <span>Filtered</span>
+                        <button onclick="clearSearch()" class="hover:text-pink-900"><i data-lucide="x" class="w-3.5 h-3.5"></i></button>
+                    </div>
+
+                    <div class="flex items-center gap-2 bg-white border border-gray-200 rounded-xl px-3 py-1.5 text-xs font-medium w-full sm:w-auto justify-between">
+                        <span class="text-gray-400 flex items-center gap-1"><i data-lucide="arrow-up-down" class="w-3.5 h-3.5"></i> Sort:</span>
+                        <select id="sort-select" onchange="handleSortChange(this.value)" class="bg-transparent font-bold text-gray-800 outline-none cursor-pointer">
+                            <option value="featured">Featured</option>
+                            <option value="price-low">Price: Low to High (₹1-10)</option>
+                            <option value="price-high">Price: High to Low (₹10-1)</option>
+                            <option value="rating">Highest Rating</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Products Grid -->
+            <div id="products-grid" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4 sm:gap-6">
+                <!-- Populated via JS -->
+            </div>
+
+        </div>
+
+        <!-- VIEW 2: PRODUCT DETAILS -->
+        <div id="view-details" class="hidden bg-white rounded-3xl shadow-sm border border-gray-100 p-6 md:p-10">
+            <!-- Populated via JS -->
+        </div>
+
+        <!-- VIEW 3: CART PAGE -->
+        <div id="view-cart" class="hidden max-w-4xl mx-auto">
+            <!-- Populated via JS -->
+        </div>
+
+        <!-- VIEW 4: CHECKOUT PROCESS -->
+        <div id="view-checkout" class="hidden max-w-2xl mx-auto bg-white rounded-3xl border border-gray-100 p-6 md:p-8 shadow-sm">
+            <!-- Populated via JS -->
+        </div>
+
+        <!-- VIEW 5: DEMO ORDERS HISTORY -->
+        <div id="view-orders" class="hidden max-w-3xl mx-auto space-y-6">
+            <!-- Populated via JS -->
+        </div>
+
+    </main>
+
+    <!-- Auth / Profile Modal -->
+    <div id="auth-modal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm hidden">
+        <div class="bg-white rounded-3xl max-w-md w-full p-6 sm:p-8 shadow-2xl relative">
+            <button onclick="closeAuthModal()" class="absolute top-4 right-4 p-2 text-gray-400 hover:text-gray-600"><i data-lucide="x" class="w-5 h-5"></i></button>
+
+            <div class="text-center mb-6">
+                <div class="w-12 h-12 bg-pink-100 text-pink-600 rounded-2xl flex items-center justify-center mx-auto mb-3 font-bold text-xl">SE</div>
+                <h2 class="text-xl font-black text-gray-900">Welcome to ShopEase</h2>
+                <p class="text-xs text-gray-500 mt-1">Frontend demo login with localStorage persistence</p>
+            </div>
+
+            <div id="auth-modal-content">
+                <!-- Populated via JS -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="bg-gray-900 text-gray-300 pt-12 pb-8 mt-16 border-t border-gray-800">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-8">
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-8">
+                <div class="space-y-3">
+                    <div class="flex items-center gap-2">
+                        <div class="w-8 h-8 rounded-lg bg-pink-600 text-white flex items-center justify-center font-bold">SE</div>
+                        <span class="text-lg font-black text-white">ShopEase</span>
+                    </div>
+                    <p class="text-xs text-gray-400 leading-relaxed">
+                        A ho-inspired e-commerce frontend replica featuring 220+ unique products across 18 categories strictly priced between ₹1 and ₹10.
+                    </p>
+                </div>
+
+                <div>
+                    <h4 class="font-bold text-white text-xs uppercase tracking-wider mb-3">Popular Categories</h4>
+                    <ul class="space-y-2 text-xs text-gray-400">
+                        <li><button onclick="selectCategory('Sarees'); switchView('home');" class="hover:text-pink-400">Sarees</button></li>
+                        <li><button onclick="selectCategory('Kurtis'); switchView('home');" class="hover:text-pink-400">Kurtis</button></li>
+                        <li><button onclick="selectCategory('Jewellery'); switchView('home');" class="hover:text-pink-400">Jewellery</button></li>
+                        <li><button onclick="selectCategory('Electronics & Gadgets'); switchView('home');" class="hover:text-pink-400">Electronics</button></li>
+                    </ul>
+                </div>
+
+                <div>
+                    <h4 class="font-bold text-white text-xs uppercase tracking-wider mb-3">Customer Policies</h4>
+                    <ul class="space-y-2 text-xs text-gray-400">
+                        <li>Free Delivery on All Items</li>
+                        <li>7-Day Return Policy (Demo)</li>
+                        <li>100% Frontend Simulation</li>
+                        <li>Secure LocalStorage Persistence</li>
+                    </ul>
+                </div>
+
+                <div>
+                    <h4 class="font-bold text-white text-xs uppercase tracking-wider mb-3">Demo Disclaimer</h4>
+                    <p class="text-xs text-gray-400 leading-relaxed">
+                        ShopEase is a portfolio showcase and responsive frontend application replica. No real orders are placed and no actual financial transactions occur.
+                    </p>
+                </div>
+            </div>
+
+            <div class="pt-8 border-t border-gray-800 text-center text-xs text-gray-500 flex flex-col sm:flex-row items-center justify-between gap-4">
+                <p>© 2026 ShopEase Inc. All rights reserved. Inspired by ho UI.</p>
+                <div class="flex gap-4">
+                    <span>Privacy Policy</span>
+                    <span>Terms of Service</span>
+                    <span>Sitemap</span>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- JavaScript Application Logic -->
+    <script>
+        // --- 18 Categories ---
+        const CATEGORIES = [
+            "All Products",
+            "Women’s Clothing",
+            "Men’s Clothing",
+            "Kids’ Fashion",
+            "Sarees",
+            "Kurtis",
+            "Jewellery",
+            "Beauty & Personal Care",
+            "Footwear",
+            "Bags & Accessories",
+            "Home & Kitchen",
+            "Home Decor",
+            "Electronics & Gadgets",
+            "Mobile Accessories",
+            "Watches",
+            "Toys",
+            "Stationery",
+            "Fitness Accessories",
+            "Kitchen Accessories"
+        ];
+
+        // --- Curated catalog: every product has a UNIQUE name + UNIQUE photo ---
+        // Each entry is [productName, uniqueUnsplashPhotoId]. Missing items like
+        // female razor, lip gloss, lip balm, clutch etc. are included below.
+        const CATEGORY_PRODUCTS = {
+            "Women’s Clothing": [
+                ["Floral Wrap Midi Dress", "1515372039744-b8f02a3ae446"],
+                ["High-Waist Denim Jeans", "1541099649105-f69ad21f3246"],
+                ["Oversized Knit Sweater", "1576871337622-98d48d1cf531"],
+                ["Pleated A-Line Skirt", "1583496661160-fb5886a0aaaa"],
+                ["Puff-Sleeve Blouse", "1564257631407-4deb1f99d992"],
+                ["Ribbed Bodycon Dress", "1572804013309-59a88b7e92f1"],
+                ["Boho Maxi Gown", "1595777457583-95e059d581b8"],
+                ["Cropped Cardigan", "1551488831-00ddcb6c6bd3"],
+                ["Linen Jumpsuit", "1485462537746-965f33f7f6a7"],
+                ["Off-Shoulder Top", "1485968579580-b6d095142e6e"],
+                ["Satin Slip Dress", "1595950653106-6c9ebd614d3a"],
+                ["Tailored Blazer", "1591047139829-d91aecb6caea"],
+                ["Printed Palazzo Pants", "1509551388413-e18d0ac5d495"],
+                ["Turtleneck Sweater Dress", "1539109136881-3be0616acf4b"],
+                ["Pastel Co-ord Set", "1490481651871-ab68de25d43d"]
+            ],
+            "Men’s Clothing": [
+                ["Slim-Fit Oxford Shirt", "1602810318383-e386cc2a3ccf"],
+                ["Classic Denim Jacket", "1581655353564-df123a1eb820"],
+                ["Graphic Crew T-Shirt", "1521572163474-6864f9cf17ab"],
+                ["Chino Casual Trousers", "1473966968600-fa801b869a1a"],
+                ["Wool Blend Overcoat", "1544022613-e87ca75a784a"],
+                ["Hooded Zip Sweatshirt", "1620799140408-edc6dcb6d633"],
+                ["Checkered Flannel Shirt", "1608234807905-4466023792f5"],
+                ["Polo Pique Shirt", "1586363104862-3a5e2ab60d99"],
+                ["Bomber Jacket", "1551028719-00167b16eac5"],
+                ["Tapered Joggers", "1552902865-b72c031ac5ea"],
+                ["Linen Summer Shirt", "1489987707025-afc232f7ea0f"],
+                ["Quilted Puffer Vest", "1614975059251-992f11792b9f"],
+                ["Henley Long-Sleeve Tee", "1618354691373-d851c5c3a990"],
+                ["Formal Suit Set", "1507679799987-c73779587ccf"],
+                ["Cargo Utility Shorts", "1591195853828-11db59a44f6b"]
+            ],
+            "Kids’ Fashion": [
+                ["Dinosaur Print Hoodie", "1519238263530-99bdd11df2ea"],
+                ["Rainbow Tutu Dress", "1522771739844-6a9f6d5f14af"],
+                ["Striped Dungarees", "1503944583220-7eeec395d80d"],
+                ["Cartoon Graphic Tee", "1471286174890-9c112ffca5b4"],
+                ["Cozy Fleece Onesie", "1514090458221-65bb69cf63e2"],
+                ["Denim Overall Shorts", "1508873696983-2df5c920ca3c"],
+                ["Floral Summer Frock", "1503454537195-1dcabb73ffb9"],
+                ["Puffer Winter Jacket", "1519457431-44ccd64a579b"],
+                ["Knitted Baby Romper", "1526628953301-3e589a6a8b74"],
+                ["Star-Print Pajama Set", "1542838132-92c53300491e"],
+                ["Mini Checked Shirt", "1515488042361-ee00e0ddd4e4"],
+                ["Unicorn Leggings", "1518831959646-742c3a14ebf7"],
+                ["School Pinafore Dress", "1600185365778-7a85d6b1a9e0"],
+                ["Sports Tracksuit", "1596461010414-7e8c4e8b2d8e"]
+            ],
+            "Sarees": [
+                ["Banarasi Silk Saree", "1610030469983-98e550d6193c"],
+                ["Kanjivaram Zari Saree", "1617627143750-d86bc21e42bb"],
+                ["Georgette Party Saree", "1610030470274-e3505c2a1215"],
+                ["Chiffon Printed Saree", "1609357605129-26f69add5d6e"],
+                ["Cotton Handloom Saree", "1566174053879-31528523f8ae"],
+                ["Embroidered Net Saree", "1583391733956-3750e0ff4e8b"],
+                ["Bandhani Tie-Dye Saree", "1603189343302-e603f7add05a"],
+                ["Paithani Peacock Saree", "1612722432474-b971cdcea546"],
+                ["Organza Pastel Saree", "1614093302611-8efc4de79b8c"],
+                ["Tussar Silk Saree", "1631233859262-0d4d7e0b6b3a"],
+                ["Designer Sequin Saree", "1596462502278-27bfdc403348"],
+                ["Half-and-Half Saree", "1618436917352-cd3d11ea4d15"]
+            ],
+            "Kurtis": [
+                ["Anarkali Flared Kurti", "1614093302611-8efc4de79b8c"],
+                ["Straight Cotton Kurti", "1583391733956-3750e0ff4e8b"],
+                ["A-Line Printed Kurti", "1595777457583-95e059d581b8"],
+                ["Rayon Embroidered Kurti", "1566174053879-31528523f8ae"],
+                ["Chikankari Kurti", "1609357605129-26f69add5d6e"],
+                ["High-Low Hem Kurti", "1572804013309-59a88b7e92f1"],
+                ["Mandarin Collar Kurti", "1603189343302-e603f7add05a"],
+                ["Angrakha Style Kurti", "1610030469983-98e550d6193c"],
+                ["Kaftan Kurti", "1617627143750-d86bc21e42bb"],
+                ["Denim Kurti", "1541099649105-f69ad21f3246"],
+                ["Block-Print Kurti", "1485968579580-b6d095142e6e"],
+                ["Festive Silk Kurti", "1596462502278-27bfdc403348"]
+            ],
+            "Jewellery": [
+                ["Kundan Choker Necklace", "1535632066927-ab7c9ab60908"],
+                ["Jhumka Drop Earrings", "1630019852942-f89202989a59"],
+                ["Gold-Plated Bangle Set", "1515562141207-7a88fb7ce338"],
+                ["Diamond Stud Earrings", "1599643478518-a784e5dc4c8f"],
+                ["Temple Pendant Chain", "1605100804763-247f67b3557e"],
+                ["Pearl Layered Necklace", "1611085583191-a3b181a88401"],
+                ["Oxidised Silver Anklet", "1506630448388-4e683c67ddb0"],
+                ["Rose-Gold Finger Ring", "1603561591411-07134e71a2a9"],
+                ["Statement Maang Tikka", "1591210244853-ea68b6126edf"],
+                ["Beaded Charm Bracelet", "1573408301185-9146fe634ad0"],
+                ["Enamel Nose Pin", "1620916566398-39f1143ab7be"],
+                ["Bridal Necklace Set", "1588444837495-c6cfeb53f32d"]
+            ],
+            "Beauty & Personal Care": [
+                ["Matte Liquid Lipstick", "1586495777744-4413f21062fa"],
+                ["Shimmer Lip Gloss", "1631214524020-7e18db9a8f92"],
+                ["Tinted Lip Balm", "1591360236480-9c6a6f6f3a8e"],
+                ["Women’s Facial Razor", "1631730486784-5c96e1c0c1a0"],
+                ["Rose Water Face Toner", "1596704017255-9b1210cefcbc"],
+                ["Vitamin C Face Serum", "1620916566398-39f1143ab7be"],
+                ["Kajal Eyeliner Pencil", "1512496015851-a90fb38ba796"],
+                ["Compact Face Powder", "1522337360788-8b13dee7a37e"],
+                ["Mascara Volume Brush", "1512290900672-35e5fb398406"],
+                ["Nail Polish Gift Set", "1571781926291-c477ebfd024b"],
+                ["Aloe Vera Moisturizer", "1556228578-8c89e6adf883"],
+                ["Perfume Body Mist", "1541643600914-78b084683601"],
+                ["Makeup Blender Sponge", "1596462502278-27bfdc403348"],
+                ["Eyebrow Shaping Kit", "1583241800698-9c2e0f0f0f0f"],
+                ["Charcoal Face Wash", "1526947425960-945c6e72858f"]
+            ],
+            "Footwear": [
+                ["Running Sports Shoes", "1542291026-7eec264c27ff"],
+                ["Classic White Sneakers", "1560769629-975ec94e6a86"],
+                ["Leather Formal Oxfords", "1549298916-b41d501d3772"],
+                ["Strappy Block Heels", "1543163521-1bf539c55dd2"],
+                ["Casual Canvas Slip-ons", "1525966222134-fcfa99b8ae77"],
+                ["Embellished Juttis", "1608256246200-53e635b5b65f"],
+                ["Flip-Flop Slippers", "1603487742131-4160ec999306"],
+                ["Ankle Chelsea Boots", "1605812860427-4024433a70fd"],
+                ["Comfort Walking Sandals", "1595950653106-6c9ebd614d3a"],
+                ["Ballet Flat Pumps", "1596703263926-eb0762ee17e4"],
+                ["High-Top Basketball Shoes", "1552346154-21d32810aba3"],
+                ["Wedge Heel Sandals", "1562273138-f46be4ebdf33"]
+            ],
+            "Bags & Accessories": [
+                ["Quilted Sling Clutch", "1584917865442-de89df76afd3"],
+                ["Leather Tote Handbag", "1548036328-c9fa89d128fa"],
+                ["Mini Crossbody Bag", "1590874103328-eac38a683ce7"],
+                ["Canvas Backpack", "1553062407-98eeb64c6a62"],
+                ["Evening Party Clutch", "1566150905458-1bf1fc113f0d"],
+                ["Travel Duffel Bag", "1553062407-98eeb64c6a62x"],
+                ["Woven Straw Basket Bag", "1591561954557-26941169b49e"],
+                ["Faux-Leather Wallet", "1627123424574-724758594e93"],
+                ["Bucket Shoulder Bag", "1564422170194-896b89110ef8"],
+                ["Printed Silk Scarf", "1601924994987-69e26d50dc26"],
+                ["Wide-Brim Sun Hat", "1521369909029-2afed882baee"],
+                ["Statement Belt", "1624222247344-550fb60583dc"]
+            ],
+            "Home & Kitchen": [
+                ["Non-Stick Fry Pan", "1584990347426-c585bc675763"],
+                ["Ceramic Dinner Set", "1602143407151-7111542de6e8"],
+                ["Stainless Steel Cookware", "1556911220-e15b29be8c8f"],
+                ["Insulated Water Bottle", "1602143407151-7111542de6e8z"],
+                ["Glass Storage Jars", "1615870216519-2f9fa575fa5c"],
+                ["Bamboo Cutting Board", "1513519245088-0e12902e5a38"],
+                ["Electric Hand Blender", "1570222094114-d054a817e56b"],
+                ["Microfiber Dish Towels", "1584990347426-c585bc675763y"],
+                ["Spice Rack Organizer", "1583394838336-acd977736f90"],
+                ["Pressure Cooker", "1588854337236-6889d631faa8"],
+                ["Melamine Serving Tray", "1590794006501-c81b7e47f525"],
+                ["Vacuum Coffee Flask", "1556910103-1c02745aae4d"]
+            ],
+            "Home Decor": [
+                ["Macrame Wall Hanging", "1584100936595-c0654b55a2e2"],
+                ["Scented Soy Candle", "1602874801007-aded8f1fef8e"],
+                ["Ceramic Flower Vase", "1578500494198-246f612d3b3d"],
+                ["LED Fairy String Lights", "1513519245088-0e12902e5a38a"],
+                ["Framed Canvas Art", "1507473885765-e6ed057f782c"],
+                ["Faux Potted Plant", "1485955900006-10f4d324d411"],
+                ["Woven Throw Blanket", "1538688525198-9b88f6f53126"],
+                ["Decorative Cushion Cover", "1579656381226-5fc0f0100c3b"],
+                ["Table Photo Frame", "1540518614846-7ede433c4ef0"],
+                ["Hanging Dreamcatcher", "1533090161767-e6ffed986c88"],
+                ["Metal Wall Clock", "1563861826100-9cb868fdbe1c"],
+                ["Aroma Diffuser Lamp", "1544117519-31a4b719223d"]
+            ],
+            "Electronics & Gadgets": [
+                ["Wireless Bluetooth Earbuds", "1590658268037-6bf12165a8df"],
+                ["Portable Power Bank", "1609091839311-d5365f9ff1c5"],
+                ["Smart Fitness Band", "1575311373937-040b8e1fd5b6"],
+                ["Mini Bluetooth Speaker", "1608043152269-423dbba4e7e1"],
+                ["Over-Ear Headphones", "1505740420928-5e560c06d30e"],
+                ["USB LED Desk Lamp", "1526738549149-8e07eca6c147"],
+                ["Webcam Full HD", "1587825140708-dfaf72ae4b04"],
+                ["Wireless Mouse", "1527864550417-7fd91fc51a46"],
+                ["Mechanical Keyboard", "1587829741301-dc798b83add3"],
+                ["Smart Plug Adapter", "1558002038-1055907df827"],
+                ["Dash Car Phone Holder", "1546868871-7041f2a55e12"],
+                ["Ring Light Tripod", "1611532736597-de2d4265fba3"]
+            ],
+            "Mobile Accessories": [
+                ["Tempered Glass Protector", "1601593346740-92561ae008cf"],
+                ["Silicone Phone Case", "1584438784894-089d6a62b8fa"],
+                ["Fast-Charging USB-C Cable", "1541872703-74c5e44368f9"],
+                ["20W Wall Charger", "1586105251261-72a756497a11"],
+                ["Pop Grip Holder", "1580910051074-3eb694886505"],
+                ["Wireless Charging Pad", "1618577608401-4f1c0f8f0f0f"],
+                ["Phone Ring Stand", "1512941937669-90a1b58e7e9c"],
+                ["Earphone Carry Case", "1572569511254-d8f925fe2cbb"],
+                ["Selfie Stick Tripod", "1611532736597-de2d4265fbaa"],
+                ["OTG Flash Drive", "1618410320928-25228d811631"],
+                ["Car Charger Dual Port", "1625895197185-efcec01cffe0"],
+                ["Phone Cleaning Kit", "1583394838336-acd977736f91"]
+            ],
+            "Watches": [
+                ["Minimalist Leather Watch", "1523275335684-37898b6baf30"],
+                ["Digital Sports Watch", "1544117519-31a4b719223d"],
+                ["Rose-Gold Dial Watch", "1524805444758-089113d48a6d"],
+                ["Chronograph Steel Watch", "1533139502658-0198f920d8e8"],
+                ["Smartwatch Touchscreen", "1579586337278-3befd40fd17a"],
+                ["Classic Analog Watch", "1522335789203-aabd1fc54bc9"],
+                ["Dual-Tone Bracelet Watch", "1548171915-e79a380a2a4b"],
+                ["Rubber Strap Diver Watch", "1612817159949-195b6eb9e31a"],
+                ["Slim Mesh Band Watch", "1619946794135-5bc917a27793"],
+                ["Kids Cartoon Watch", "1434056886845-dac89ffe9b56"],
+                ["Vintage Pocket Watch", "1509048191080-d2984bad6ae5"],
+                ["Fitness GPS Watch", "1551816230-ef5deaed4a26"]
+            ],
+            "Toys": [
+                ["Building Blocks Set", "1596461404969-9ae70f2830c1"],
+                ["Plush Teddy Bear", "1591991564624-260b73b23a27"],
+                ["Remote Control Car", "1535223289827-42f1e9919769"],
+                ["Wooden Puzzle Board", "1566576912321-d58ddd7a6088"],
+                ["Stackable Ring Tower", "1530325553223-94e5f5e7fef4"],
+                ["Toy Kitchen Playset", "1558877385-81a1c7e67d72"],
+                ["Rubik's Speed Cube", "1591991564624-260b73b23a28"],
+                ["Dollhouse Miniature", "1545558014-8692077e9b5c"],
+                ["Action Figure Hero", "1608889175123-8ee362201f81"],
+                ["Spinning Top Set", "1587654780291-39c9404d746b"],
+                ["Soft Building Clay", "1560859251-d563a49c5e4a"],
+                ["Musical Xylophone", "1518331647614-7a1f04cd34cf"]
+            ],
+            "Stationery": [
+                ["Hardbound Notebook", "1544716278-ca5e3f4abd8c"],
+                ["Gel Pen Pack", "1583485088034-697b5bc54ccd"],
+                ["Watercolor Paint Set", "1516962215378-7fa2e137ae93"],
+                ["Sticky Note Cubes", "1569683795645-b62e50fbf103"],
+                ["Desk Organizer Caddy", "1503676260728-1c00da094a0b"],
+                ["Mechanical Pencil Set", "1455390582262-044cdead277a"],
+                ["Washi Tape Collection", "1531346878377-a5be20888e57"],
+                ["Fountain Ink Pen", "1586281380117-5a60ae2050cc"],
+                ["Spiral Sketchbook", "1513001900722-370f803f498d"],
+                ["Highlighter Marker Set", "1522199755839-a2bacb67c546"],
+                ["Metal Ruler & Scale", "1596495577886-d920f1fb7238"],
+                ["Planner Diary 2026", "1517842645767-c639042777db"]
+            ],
+            "Fitness Accessories": [
+                ["Yoga Mat Non-Slip", "1518611012118-696072aa579a"],
+                ["Resistance Band Set", "1517838277536-f5f99be501cd"],
+                ["Adjustable Dumbbells", "1576678927484-cc907957088c"],
+                ["Skipping Jump Rope", "1584735935682-2f2b69dff9d2"],
+                ["Gym Gloves Pair", "1540497077202-7c8a3999166f"],
+                ["Foam Roller", "1571019613454-1cb2f99b2d8b"],
+                ["Protein Shaker Bottle", "1594737625785-a6cbdabd333c"],
+                ["Ab Roller Wheel", "1591940765347-e21b5e8db6b9"],
+                ["Kettlebell Weight", "1534438327276-14e5300c3a48"],
+                ["Running Armband", "1538805060514-97d9cc17730c"],
+                ["Push-Up Bars", "1517836357463-d25dfeac3438"],
+                ["Fitness Hand Gripper", "1526506118085-60ce8714f8c5"]
+            ],
+            "Kitchen Accessories": [
+                ["Silicone Spatula Set", "1588854337236-6889d631faa8"],
+                ["Measuring Cup & Spoon", "1590794006501-c81b7e47f525"],
+                ["Stainless Steel Grater", "1556910103-1c02745aae4d"],
+                ["Wooden Spoon Set", "1584990347426-c585bc675764"],
+                ["Garlic Press Crusher", "1583394838336-acd977736f92"],
+                ["Egg Whisk Beater", "1607877361964-d5c3c0c3e6b0"],
+                ["Vegetable Chopper", "1593618998160-e34014e67546"],
+                ["Kitchen Knife Set", "1593618998160-e34014e67547"],
+                ["Peeler & Slicer Combo", "1604908176997-125f25cc6f3d"],
+                ["Mixing Bowl Set", "1578020190125-f4f7c18bc9cb"],
+                ["Dish Drying Rack", "1581622558667-9ab4b4c21f33"],
+                ["Oven Mitt & Apron", "1556909172-54557c7e4fb7"]
+            ]
+        };
+
+        // Realistic short descriptions keyed loosely by category
+        const CATEGORY_TAGLINE = {
+            "Women’s Clothing": "Comfortable everyday wear with a flattering fit and breathable fabric.",
+            "Men’s Clothing": "Smart, durable menswear made for all-day comfort and style.",
+            "Kids’ Fashion": "Soft, skin-friendly kidswear in fun colours and easy-care fabric.",
+            "Sarees": "Elegant drape with fine weave and rich festive detailing.",
+            "Kurtis": "Breezy, versatile kurti that pairs with leggings, jeans or palazzos.",
+            "Jewellery": "Lightweight, skin-safe finish with a graceful, eye-catching design.",
+            "Beauty & Personal Care": "Gentle, everyday self-care essential for a fresh, confident look.",
+            "Footwear": "Cushioned, long-wear comfort with a grippy, non-slip sole.",
+            "Bags & Accessories": "Roomy, well-stitched and styled to complete any outfit.",
+            "Home & Kitchen": "Sturdy, easy-to-clean essential that upgrades your daily routine.",
+            "Home Decor": "A cozy accent piece that adds warmth and character to any room.",
+            "Electronics & Gadgets": "Handy tech with reliable performance and a compact build.",
+            "Mobile Accessories": "A must-have add-on for protection and everyday convenience.",
+            "Watches": "A sleek timepiece with a precise movement and comfortable strap.",
+            "Toys": "Safe, engaging play that sparks creativity and hours of fun.",
+            "Stationery": "Neat, dependable supplies for work, study and journaling.",
+            "Fitness Accessories": "Build strength and stamina with this home-workout essential.",
+            "Kitchen Accessories": "A practical tool that makes meal prep quicker and easier."
+        };
+
+
+        // Build an Unsplash URL from a photo id
+        function unsplashUrl(id) {
+            return `https://images.unsplash.com/photo-${id}?auto=format&fit=crop&w=600&q=80`;
+        }
+
+        // Deterministic pseudo-random so prices/ratings stay stable per product
+        function seededRand(seed) {
+            const x = Math.sin(seed * 9973.7) * 10000;
+            return x - Math.floor(x);
+        }
+
+        // --- Build catalog from curated CATEGORY_PRODUCTS (unique name + unique photo each) ---
+        function generateProductCatalog() {
+            const products = [];
+            const usedImages = new Set();
+            let idCounter = 1;
+            const actualCategories = CATEGORIES.slice(1); // Exclude "All Products"
+
+            actualCategories.forEach(cat => {
+                const items = CATEGORY_PRODUCTS[cat] || [];
+                items.forEach(([name, photoId]) => {
+                    // Guarantee image uniqueness across the whole catalog
+                    let image = unsplashUrl(photoId);
+                    if (usedImages.has(image)) {
+                        image = unsplashUrl(`${photoId}-${idCounter}`);
+                    }
+                    usedImages.add(image);
+
+                    const r1 = seededRand(idCounter + 1);
+                    const r2 = seededRand(idCounter + 101);
+                    const r3 = seededRand(idCounter + 201);
+
+                    const price = (r1 * 9 + 1).toFixed(2);       // Strictly ₹1–₹10
+                    const rating = (r2 * 1.0 + 4.0).toFixed(1);  // 4.0–5.0
+                    const reviews = Math.floor(r3 * 4500 + 120);
+
+                    products.push({
+                        id: idCounter++,
+                        name: name,
+                        category: cat,
+                        price: parseFloat(price),
+                        rating: parseFloat(rating),
+                        reviews: reviews,
+                        image: image,
+                        description: `${name} — ${CATEGORY_TAGLINE[cat] || "Quality everyday essential."} Demo price strictly between ₹1 and ₹10.`
+                    });
+                });
+            });
+            return products;
+        }
+
+        // --- Application State ---
+        let ALL_PRODUCTS = generateProductCatalog();
+        let cart = JSON.parse(localStorage.getItem("shopease_cart")) || [];
+        let orders = JSON.parse(localStorage.getItem("shopease_orders")) || [];
+        let currentUser = JSON.parse(localStorage.getItem("shopease_user")) || null;
+
+        let currentCategory = "All Products";
+        let searchQuery = "";
+        let sortBy = "featured";
+        let currentView = "home"; // 'home', 'details', 'cart', 'checkout', 'orders'
+        let selectedProduct = null;
+        let detailQuantity = 1;
+        let checkoutStep = 1; // 2: Address, 3: Summary, 4: Success
+        let addressForm = { fullName: "", phone: "", street: "", city: "", state: "", pincode: "" };
+
+        // --- Initialization ---
+        window.onload = function() {
+            renderCategoriesNav();
+            renderProducts();
+            updateHeaderBadges();
+            updateUserProfileUI();
+            lucide.createIcons();
+        };
+
+        // --- Navigation & View Switcher ---
+        function switchView(viewName) {
+            currentView = viewName;
+            document.getElementById('view-home').classList.add('hidden');
+            document.getElementById('view-details').classList.add('hidden');
+            document.getElementById('view-cart').classList.add('hidden');
+            document.getElementById('view-checkout').classList.add('hidden');
+            document.getElementById('view-orders').classList.add('hidden');
+
+            if (viewName === 'home') {
+                document.getElementById('view-home').classList.remove('hidden');
+                renderProducts();
+            } else if (viewName === 'details') {
+                document.getElementById('view-details').classList.remove('hidden');
+                renderProductDetails();
+            } else if (viewName === 'cart') {
+                document.getElementById('view-cart').classList.remove('hidden');
+                renderCartPage();
+            } else if (viewName === 'checkout') {
+                document.getElementById('view-checkout').classList.remove('hidden');
+                renderCheckoutPage();
+            } else if (viewName === 'orders') {
+                document.getElementById('view-orders').classList.remove('hidden');
+                renderOrdersPage();
+            }
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+            lucide.createIcons();
+        }
+
+        // --- Render Categories in Header & Grid ---
+        function renderCategoriesNav() {
+            // Desktop horizontal bar
+            const desktopNav = document.getElementById('desktop-categories');
+            desktopNav.innerHTML = CATEGORIES.map(cat => `
+                <button onclick="selectCategory('${cat}')" class="px-3 py-1.5 rounded-lg text-xs font-medium whitespace-nowrap transition-all ${
+                    currentCategory === cat ? "bg-pink-50 text-pink-700 font-semibold border border-pink-200" : "text-gray-600 hover:bg-gray-100"
+                }">
+                    ${cat}
+                </button>
+            `).join('');
+
+            // Mobile Drawer
+            const mobileNav = document.getElementById('mobile-categories');
+            mobileNav.innerHTML = CATEGORIES.map(cat => `
+                <button onclick="selectCategory('${cat}'); toggleMobileMenu(); switchView('home');" class="w-full text-left px-3 py-2 rounded-lg text-xs font-medium transition ${
+                    currentCategory === cat ? "bg-pink-50 text-pink-700 font-bold" : "text-gray-600 hover:bg-gray-50"
+                }">
+                    ${cat}
+                </button>
+            `).join('');
+
+            // Homepage Category Chips Grid
+            const grid = document.getElementById('categories-grid');
+            grid.innerHTML = CATEGORIES.slice(1).map(cat => `
+                <button onclick="selectCategory('${cat}')" class="p-3 rounded-2xl border text-center transition flex flex-col items-center justify-center gap-1.5 ${
+                    currentCategory === cat ? "bg-pink-600 text-white border-pink-600 shadow-md shadow-pink-600/20 font-bold" : "bg-white text-gray-700 border-gray-100 hover:border-pink-200 hover:bg-pink-50/50 font-medium text-xs"
+                }">
+                    <span class="text-[11px] line-clamp-2">${cat}</span>
+                </button>
+            `).join('');
+        }
+
+        function selectCategory(cat) {
+            currentCategory = cat;
+            renderCategoriesNav();
+            renderProducts();
+        }
+
+        // --- Render Products Grid ---
+        function renderProducts() {
+            let filtered = ALL_PRODUCTS.filter(item => {
+                const matchesCat = currentCategory === "All Products" || item.category === currentCategory;
+                const q = searchQuery.toLowerCase().trim();
+                const matchesSearch = !q || item.name.toLowerCase().includes(q) || item.category.toLowerCase().includes(q) || item.description.toLowerCase().includes(q);
+                return matchesCat && matchesSearch;
+            });
+
+            // Sorting
+            if (sortBy === "price-low") filtered.sort((a,b) => a.price - b.price);
+            else if (sortBy === "price-high") filtered.sort((a,b) => b.price - a.price);
+            else if (sortBy === "rating") filtered.sort((a,b) => b.rating - a.rating);
+
+            document.getElementById('current-category-title').innerText = currentCategory;
+            document.getElementById('product-count-badge').innerText = `${filtered.length} Items`;
+
+            const activeTag = document.getElementById('active-filter-tag');
+            if (searchQuery || currentCategory !== "All Products") {
+                activeTag.classList.remove('hidden');
+                activeTag.classList.add('flex');
+            } else {
+                activeTag.classList.add('hidden');
+                activeTag.classList.remove('flex');
+            }
+
+            const grid = document.getElementById('products-grid');
+            if (filtered.length === 0) {
+                grid.innerHTML = `
+                    <div class="col-span-full bg-white rounded-3xl p-16 text-center border border-gray-100 shadow-sm space-y-3">
+                        <i data-lucide="search" class="w-12 h-12 text-gray-300 mx-auto"></i>
+                        <h3 class="font-bold text-gray-800 text-lg">No products found</h3>
+                        <p class="text-gray-500 text-xs">Try searching for something else or clear your filters.</p>
+                        <button onclick="clearSearch(); selectCategory('All Products');" class="bg-pink-600 text-white text-xs font-bold px-5 py-2.5 rounded-xl shadow transition">
+                            Reset All Filters
+                        </button>
+                    </div>
+                `;
+                lucide.createIcons();
+                return;
+            }
+
+            grid.innerHTML = filtered.map(product => `
+                <div onclick="openProductDetails(${product.id})" class="bg-white rounded-2xl border border-gray-100 shadow-sm hover:shadow-xl transition-all duration-300 cursor-pointer overflow-hidden flex flex-col justify-between group">
+                    <div>
+                        <div class="relative aspect-square bg-gray-100 overflow-hidden">
+                            <img src="${product.image}" alt="${product.name}" class="w-full h-full object-cover group-hover:scale-105 transition duration-500" onerror="this.src='https://placehold.co/400x400/f3f4f6/1f2937?text=ShopEase'">
+                            <span class="absolute top-2 left-2 bg-white/90 backdrop-blur-md text-[9px] font-bold text-gray-800 px-2 py-0.5 rounded-md shadow">${product.category}</span>
+                        </div>
+                        <div class="p-3 sm:p-4 space-y-2">
+                            <h3 class="text-xs sm:text-sm font-bold text-gray-800 line-clamp-2 leading-snug group-hover:text-pink-600 transition">${product.name}</h3>
+                            <div class="flex items-center gap-2">
+                                <span class="text-sm sm:text-base font-black text-pink-600">₹${product.price.toFixed(2)}</span>
+                                <span class="text-[10px] bg-gray-100 text-gray-500 font-semibold px-1.5 py-0.5 rounded">Demo Price</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="p-3 sm:p-4 pt-0 flex items-center justify-between border-t border-gray-50 mt-2">
+                        <div class="flex items-center gap-1 bg-green-50 text-green-700 px-2 py-0.5 rounded text-[11px] font-bold">
+                            <span>${product.rating}</span>
+                            <i data-lucide="star" class="w-3 h-3 fill-current"></i>
+                        </div>
+                        <button onclick="event.stopPropagation(); addToCartById(${product.id}, 1)" class="bg-pink-50 hover:bg-pink-600 text-pink-600 hover:text-white px-3 py-1.5 rounded-xl text-xs font-bold transition shadow-sm">
+                            Add
+                        </button>
+                    </div>
+                </div>
+            `).join('');
+            lucide.createIcons();
+        }
+
+        // --- Search functionality ---
+        function handleSearchInput(val) {
+            searchQuery = val;
+            const clearBtn = document.getElementById('clear-search-btn');
+            if (val) {
+                clearBtn.classList.remove('hidden');
+                clearBtn.classList.add('flex');
+            } else {
+                clearBtn.classList.add('hidden');
+                clearBtn.classList.remove('flex');
+            }
+            if (currentView !== 'home') switchView('home');
+            renderProducts();
+        }
+
+        function clearSearch() {
+            searchQuery = "";
+            document.getElementById('search-input').value = "";
+            document.getElementById('clear-search-btn').classList.add('hidden');
+            renderProducts();
+        }
+
+        function handleSortChange(val) {
+            sortBy = val;
+            renderProducts();
+        }
+
+        function scrollToProducts() {
+            document.getElementById('product-catalog-section').scrollIntoView({ behavior: 'smooth' });
+        }
+
+        // --- Product Details View ---
+        function openProductDetails(id) {
+            selectedProduct = ALL_PRODUCTS.find(p => p.id === id);
+            detailQuantity = 1;
+            switchView('details');
+        }
+
+        function renderProductDetails() {
+            if (!selectedProduct) return;
+            const related = ALL_PRODUCTS.filter(p => p.category === selectedProduct.category && p.id !== selectedProduct.id).slice(0, 4);
+
+            const container = document.getElementById('view-details');
+            container.innerHTML = `
+                <button onclick="switchView('home')" class="mb-6 inline-flex items-center gap-2 text-sm font-semibold text-pink-600 hover:text-pink-700 bg-pink-50 px-4 py-2 rounded-xl transition">
+                    ← Back to Products
+                </button>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-10">
+                    <div class="relative rounded-2xl overflow-hidden bg-gray-100 aspect-square shadow-inner">
+                        <img src="${selectedProduct.image}" alt="${selectedProduct.name}" class="w-full h-full object-cover" onerror="this.src='https://placehold.co/600x600/f3f4f6/1f2937?text=ShopEase'">
+                        <span class="absolute top-4 left-4 bg-black/60 backdrop-blur-md text-white text-xs px-3 py-1 rounded-full font-medium">${selectedProduct.category}</span>
+                    </div>
+
+                    <div class="flex flex-col justify-between">
+                        <div>
+                            <div class="flex items-center gap-2 mb-2">
+                                <span class="bg-green-100 text-green-800 text-xs font-bold px-2.5 py-1 rounded-lg flex items-center gap-1">
+                                    ${selectedProduct.rating} <i data-lucide="star" class="w-3.5 h-3.5 fill-current"></i>
+                                </span>
+                                <span class="text-gray-400 text-xs">(${selectedProduct.reviews} Reviews)</span>
+                            </div>
+
+                            <h1 class="text-2xl sm:text-3xl font-black text-gray-900 mb-3">${selectedProduct.name}</h1>
+
+                            <div class="flex items-baseline gap-3 mb-6">
+                                <span class="text-3xl font-black text-pink-600">₹${selectedProduct.price.toFixed(2)}</span>
+                                <span class="text-xs text-gray-500 font-semibold bg-gray-100 px-2.5 py-1 rounded-md">Demo Price (Strictly ₹1–₹10)</span>
+                            </div>
+
+                            <p class="text-gray-600 text-sm leading-relaxed mb-6">${selectedProduct.description}</p>
+
+                            <div class="bg-gray-50 p-4 rounded-2xl border border-gray-100 space-y-2 mb-6">
+                                <div class="flex items-center gap-3 text-xs text-gray-700 font-medium"><i data-lucide="truck" class="w-4 h-4 text-pink-600"></i> Free Delivery on this item</div>
+                                <div class="flex items-center gap-3 text-xs text-gray-700 font-medium"><i data-lucide="refresh-cw" class="w-4 h-4 text-pink-600"></i> 7-Day Easy Returns & Exchange</div>
+                                <div class="flex items-center gap-3 text-xs text-gray-700 font-medium"><i data-lucide="shield-check" class="w-4 h-4 text-pink-600"></i> 100% Secure Frontend Simulation</div>
+                            </div>
+
+                            <div class="flex items-center gap-4 mb-6">
+                                <span class="text-sm font-bold text-gray-700">Quantity:</span>
+                                <div class="flex items-center border border-gray-200 rounded-xl overflow-hidden bg-white">
+                                    <button onclick="updateDetailQty(-1)" class="px-3 py-1.5 hover:bg-gray-100 text-gray-600 font-bold">-</button>
+                                    <span id="detail-qty-val" class="px-4 py-1.5 text-sm font-bold text-gray-900">${detailQuantity}</span>
+                                    <button onclick="updateDetailQty(1)" class="px-3 py-1.5 hover:bg-gray-100 text-gray-600 font-bold">+</button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="flex gap-4">
+                            <button onclick="addToCartById(${selectedProduct.id}, detailQuantity)" class="flex-1 bg-white border-2 border-pink-600 text-pink-600 hover:bg-pink-50 py-3 px-6 rounded-xl font-bold text-sm transition shadow-sm">
+                                Add to Cart
+                            </button>
+                            <button onclick="addToCartById(${selectedProduct.id}, detailQuantity); switchView('cart');" class="flex-1 bg-pink-600 hover:bg-pink-700 text-white py-3 px-6 rounded-xl font-bold text-sm transition shadow-md shadow-pink-600/30">
+                                Buy Now
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="mt-16">
+                    <h2 class="text-xl font-black mb-6">Similar Products You May Like</h2>
+                    <div class="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-4 gap-4">
+                        ${related.map(p => `
+                            <div onclick="openProductDetails(${p.id})" class="bg-white border border-gray-100 rounded-2xl p-3 shadow-sm hover:shadow-md transition cursor-pointer flex flex-col justify-between">
+                                <div>
+                                    <div class="aspect-square rounded-xl overflow-hidden bg-gray-100 mb-3">
+                                        <img src="${p.image}" alt="${p.name}" class="w-full h-full object-cover" onerror="this.src='https://placehold.co/400x400/f3f4f6/1f2937?text=ShopEase'">
+                                    </div>
+                                    <h3 class="text-xs font-bold text-gray-800 line-clamp-1 mb-1">${p.name}</h3>
+                                    <div class="flex items-center gap-2 mb-2">
+                                        <span class="text-xs font-bold text-pink-600">₹${p.price.toFixed(2)}</span>
+                                        <span class="text-[10px] text-gray-400 bg-gray-100 px-1.5 py-0.5 rounded">Demo</span>
+                                    </div>
+                                </div>
+                                <div class="flex items-center justify-between text-[11px] text-gray-500 pt-2 border-t border-gray-50">
+                                    <span class="flex items-center gap-1 font-semibold text-gray-700">${p.rating} <i data-lucide="star" class="w-3 h-3 fill-current text-yellow-500"></i></span>
+                                    <span class="text-pink-600 font-bold">View</span>
+                                </div>
+                            </div>
+                        `).join('')}
+                    </div>
+                </div>
+            `;
+            lucide.createIcons();
+        }
+
+        function updateDetailQty(delta) {
+            detailQuantity = Math.max(1, detailQuantity + delta);
+            document.getElementById('detail-qty-val').innerText = detailQuantity;
+        }
+
+        // --- Cart Operations ---
+        function addToCartById(productId, qty = 1) {
+            const product = ALL_PRODUCTS.find(p => p.id === productId);
+            if (!product) return;
+
+            const existing = cart.find(item => item.id === productId);
+            if (existing) {
+                existing.quantity += qty;
+            } else {
+                cart.push({ ...product, quantity: qty });
+            }
+            saveCart();
+            showToast(`Added ${product.name} to cart!`);
+        }
+
+        function updateCartItemQty(productId, delta) {
+            const item = cart.find(i => i.id === productId);
+            if (item) {
+                item.quantity += delta;
+                if (item.quantity <= 0) {
+                    cart = cart.filter(i => i.id !== productId);
+                }
+            }
+            saveCart();
+            renderCartPage();
+        }
+
+        function removeFromCart(productId) {
+            cart = cart.filter(i => i.id !== productId);
+            saveCart();
+            renderCartPage();
+            showToast("Item removed from cart");
+        }
+
+        function saveCart() {
+            localStorage.setItem("shopease_cart", JSON.stringify(cart));
+            updateHeaderBadges();
+        }
+
+        function updateHeaderBadges() {
+            const totalItems = cart.reduce((sum, i) => sum + i.quantity, 0);
+            
+            const badgeDesktop = document.getElementById('cart-count-badge');
+            const badgeMobile = document.getElementById('mobile-cart-count');
+            const ordersBadgeDesktop = document.getElementById('orders-count-badge');
+            const ordersBadgeMobile = document.getElementById('mobile-orders-count');
+
+            if (totalItems > 0) {
+                badgeDesktop.innerText = totalItems;
+                badgeDesktop.classList.remove('hidden');
+            } else {
+                badgeDesktop.classList.add('hidden');
+            }
+            badgeMobile.innerText = totalItems;
+            ordersBadgeDesktop.innerText = orders.length;
+            ordersBadgeMobile.innerText = orders.length;
+        }
+
+        function renderCartPage() {
+            const container = document.getElementById('view-cart');
+            const totalItems = cart.reduce((sum, i) => sum + i.quantity, 0);
+            const subtotal = cart.reduce((sum, i) => sum + (i.price * i.quantity), 0);
+            const deliveryCharge = subtotal > 0 ? 1 : 0;
+            const grandTotal = subtotal + deliveryCharge;
+
+            if (cart.length === 0) {
+                container.innerHTML = `
+                    <h1 class="text-2xl sm:text-3xl font-black mb-6">Shopping Cart</h1>
+                    <div class="bg-white rounded-3xl p-12 text-center border border-gray-100 shadow-sm">
+                        <div class="w-20 h-20 bg-pink-50 text-pink-600 rounded-full flex items-center justify-center mx-auto mb-4">
+                            <i data-lucide="shopping-bag" class="w-10 h-10"></i>
+                        </div>
+                        <h2 class="text-lg font-bold text-gray-800 mb-2">Your Cart is Empty</h2>
+                        <p class="text-gray-500 text-sm mb-6">Explore our 220+ amazing products priced between ₹1 and ₹10!</p>
+                        <button onclick="switchView('home')" class="bg-pink-600 hover:bg-pink-700 text-white font-bold px-6 py-3 rounded-xl shadow-md transition text-sm">
+                            Start Shopping Now
+                        </button>
+                    </div>
+                `;
+                lucide.createIcons();
+                return;
+            }
+
+            container.innerHTML = `
+                <h1 class="text-2xl sm:text-3xl font-black mb-6">Shopping Cart (${totalItems} Items)</h1>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                    <div class="md:col-span-2 space-y-4">
+                        ${cart.map(item => `
+                            <div class="bg-white p-4 rounded-2xl border border-gray-100 shadow-sm flex items-center gap-4">
+                                <img src="${item.image}" alt="${item.name}" class="w-20 h-20 object-cover rounded-xl bg-gray-100 flex-shrink-0" onerror="this.src='https://placehold.co/200x200/f3f4f6/1f2937?text=ShopEase'">
+                                <div class="flex-1 min-w-0">
+                                    <h3 class="font-bold text-sm text-gray-900 truncate">${item.name}</h3>
+                                    <p class="text-xs text-gray-400 mb-2">${item.category}</p>
+                                    <div class="text-sm font-black text-pink-600">₹${item.price.toFixed(2)} <span class="text-[10px] text-gray-400 font-normal">Demo Price</span></div>
+                                </div>
+                                <div class="flex flex-col items-end gap-3">
+                                    <button onclick="removeFromCart(${item.id})" class="text-gray-400 hover:text-red-500 transition"><i data-lucide="trash-2" class="w-4 h-4"></i></button>
+                                    <div class="flex items-center border border-gray-200 rounded-lg overflow-hidden bg-gray-50">
+                                        <button onclick="updateCartItemQty(${item.id}, -1)" class="px-2.5 py-1 text-xs hover:bg-gray-200 font-bold">-</button>
+                                        <span class="px-3 py-1 text-xs font-bold text-gray-800">${item.quantity}</span>
+                                        <button onclick="updateCartItemQty(${item.id}, 1)" class="px-2.5 py-1 text-xs hover:bg-gray-200 font-bold">+</button>
+                                    </div>
+                                </div>
+                            </div>
+                        `).join('')}
+                    </div>
+
+                    <div class="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm h-fit space-y-4">
+                        <h3 class="font-bold text-base text-gray-900 border-b border-gray-100 pb-3">Price Details</h3>
+                        <div class="space-y-2 text-sm text-gray-600">
+                            <div class="flex justify-between"><span>Cart Total</span><span class="font-semibold text-gray-900">₹${subtotal.toFixed(2)}</span></div>
+                            <div class="flex justify-between"><span>Demo Delivery Fee</span><span class="font-semibold text-green-600">₹${deliveryCharge}.00</span></div>
+                            <div class="flex justify-between text-xs text-pink-600 bg-pink-50 p-2 rounded-lg"><span>Discount Offer</span><span class="font-bold">FREE</span></div>
+                        </div>
+                        <div class="border-t border-gray-100 pt-3 flex justify-between font-black text-lg text-gray-900">
+                            <span>Final Demo Total</span>
+                            <span class="text-pink-600">₹${grandTotal.toFixed(2)}</span>
+                        </div>
+                        <button onclick="switchView('checkout')" class="w-full bg-pink-600 hover:bg-pink-700 text-white font-bold py-3 rounded-xl shadow-md transition text-sm flex items-center justify-center gap-2">
+                            Proceed to Checkout <i data-lucide="arrow-right" class="w-4 h-4"></i>
+                        </button>
+                    </div>
+                </div>
+            `;
+            lucide.createIcons();
+        }
+
+        // --- Checkout Process ---
+        function renderCheckoutPage() {
+            const container = document.getElementById('view-checkout');
+            const subtotal = cart.reduce((sum, i) => sum + (i.price * i.quantity), 0);
+            const deliveryCharge = subtotal > 0 ? 1 : 0;
+            const grandTotal = subtotal + deliveryCharge;
+
+            container.innerHTML = `
+                <div class="flex items-center justify-between mb-8 pb-6 border-b border-gray-100">
+                    <div class="flex items-center gap-2 ${checkoutStep >= 2 ? 'text-pink-600 font-bold' : 'text-gray-400'}">
+                        <div class="w-8 h-8 rounded-full flex items-center justify-center text-xs ${checkoutStep >= 2 ? 'bg-pink-600 text-white' : 'bg-gray-100 text-gray-500'}">1</div>
+                        <span class="text-xs sm:text-sm">Address</span>
+                    </div>
+                    <div class="w-10 h-0.5 bg-gray-200"></div>
+                    <div class="flex items-center gap-2 ${checkoutStep >= 3 ? 'text-pink-600 font-bold' : 'text-gray-400'}">
+                        <div class="w-8 h-8 rounded-full flex items-center justify-center text-xs ${checkoutStep >= 3 ? 'bg-pink-600 text-white' : 'bg-gray-100 text-gray-500'}">2</div>
+                        <span class="text-xs sm:text-sm">Summary</span>
+                    </div>
+                    <div class="w-10 h-0.5 bg-gray-200"></div>
+                    <div class="flex items-center gap-2 ${checkoutStep >= 4 ? 'text-pink-600 font-bold' : 'text-gray-400'}">
+                        <div class="w-8 h-8 rounded-full flex items-center justify-center text-xs ${checkoutStep >= 4 ? 'bg-pink-600 text-white' : 'bg-gray-100 text-gray-500'}">3</div>
+                        <span class="text-xs sm:text-sm">Success</span>
+                    </div>
+                </div>
+
+                ${checkoutStep === 2 ? `
+                    <form onsubmit="handleAddressSubmit(event)" class="space-y-4">
+                        <h2 class="text-xl font-black mb-4">Enter Delivery Address</h2>
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-xs font-bold text-gray-700 mb-1">Full Name</label>
+                                <input type="text" id="addr-name" required value="${addressForm.fullName}" placeholder="e.g. Rahul Sharma" class="w-full px-3.5 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:bg-white focus:border-pink-500 outline-none">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-bold text-gray-700 mb-1">Mobile Number</label>
+                                <input type="tel" id="addr-phone" maxlength="10" required value="${addressForm.phone}" placeholder="e.g. 9876543210" class="w-full px-3.5 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:bg-white focus:border-pink-500 outline-none">
+                            </div>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold text-gray-700 mb-1">House No. & Street / Area</label>
+                            <input type="text" id="addr-street" required value="${addressForm.street}" placeholder="e.g. Sunshine Apartments, MG Road" class="w-full px-3.5 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:bg-white focus:border-pink-500 outline-none">
+                        </div>
+                        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                            <div>
+                                <label class="block text-xs font-bold text-gray-700 mb-1">City</label>
+                                <input type="text" id="addr-city" required value="${addressForm.city}" placeholder="e.g. Mumbai" class="w-full px-3.5 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:bg-white focus:border-pink-500 outline-none">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-bold text-gray-700 mb-1">State</label>
+                                <input type="text" id="addr-state" required value="${addressForm.state}" placeholder="e.g. Maharashtra" class="w-full px-3.5 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:bg-white focus:border-pink-500 outline-none">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-bold text-gray-700 mb-1">PIN Code</label>
+                                <input type="text" id="addr-pincode" maxlength="6" required value="${addressForm.pincode}" placeholder="e.g. 400001" class="w-full px-3.5 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:bg-white focus:border-pink-500 outline-none">
+                            </div>
+                        </div>
+                        <div class="flex gap-4 pt-4">
+                            <button type="button" onclick="switchView('cart')" class="w-1/3 bg-gray-100 hover:bg-gray-200 text-gray-700 font-bold py-3 rounded-xl transition text-sm">Back to Cart</button>
+                            <button type="submit" class="w-2/3 bg-pink-600 hover:bg-pink-700 text-white font-bold py-3 rounded-xl shadow-md transition text-sm">Deliver to this Address</button>
+                        </div>
+                    </form>
+                ` : checkoutStep === 3 ? `
+                    <div class="space-y-6">
+                        <h2 class="text-xl font-black">Demo Order Summary</h2>
+                        <div class="bg-gray-50 p-4 rounded-2xl border border-gray-200 space-y-1 text-xs">
+                            <div class="font-bold text-gray-900 text-sm">Deliver to: ${addressForm.fullName} (${addressForm.phone})</div>
+                            <div class="text-gray-600">${addressForm.street}, ${addressForm.city}, ${addressForm.state} - ${addressForm.pincode}</div>
+                        </div>
+                        <div class="divide-y divide-gray-100 max-h-60 overflow-y-auto">
+                            ${cart.map(item => `
+                                <div class="py-3 flex items-center justify-between gap-4">
+                                    <div class="flex items-center gap-3">
+                                        <img src="${item.image}" alt="${item.name}" class="w-12 h-12 rounded-lg object-cover bg-gray-100">
+                                        <div>
+                                            <h4 class="font-bold text-xs text-gray-900 line-clamp-1">${item.name}</h4>
+                                            <span class="text-[10px] text-gray-400">Qty: ${item.quantity}</span>
+                                        </div>
+                                    </div>
+                                    <span class="font-bold text-sm text-pink-600">₹${(item.price * item.quantity).toFixed(2)}</span>
+                                </div>
+                            `).join('')}
+                        </div>
+                        <div class="bg-pink-50 p-4 rounded-2xl border border-pink-100 space-y-1 text-sm">
+                            <div class="flex justify-between text-gray-600"><span>Subtotal</span><span>₹${subtotal.toFixed(2)}</span></div>
+                            <div class="flex justify-between text-gray-600"><span>Delivery Charge</span><span>₹${deliveryCharge}.00</span></div>
+                            <div class="flex justify-between font-black text-gray-900 text-base border-t border-pink-200 pt-2"><span>Final Demo Total</span><span class="text-pink-600">₹${grandTotal.toFixed(2)}</span></div>
+                        </div>
+                        <div class="flex gap-4">
+                            <button onclick="checkoutStep=2; renderCheckoutPage();" class="w-1/3 bg-gray-100 hover:bg-gray-200 text-gray-700 font-bold py-3 rounded-xl transition text-sm">Edit Address</button>
+                            <button onclick="confirmDemoOrder()" class="w-2/3 bg-green-600 hover:bg-green-700 text-white font-bold py-3 rounded-xl shadow-md transition text-sm flex items-center justify-center gap-2">Confirm Demo Order <i data-lucide="check-circle-2" class="w-4 h-4"></i></button>
+                        </div>
+                    </div>
+                ` : `
+                    <div class="text-center py-6 space-y-4">
+                        <div class="w-16 h-16 bg-green-100 text-green-600 rounded-full flex items-center justify-center mx-auto mb-2 shadow-inner">
+                            <i data-lucide="check-circle-2" class="w-10 h-10"></i>
+                        </div>
+                        <h2 class="text-2xl font-black text-gray-900">Demo Order Placed Successfully!</h2>
+                        <div class="bg-yellow-50 border border-yellow-200 text-yellow-800 p-3 rounded-xl text-xs font-semibold">
+                            ⚠️ This is a frontend demo. No real order has been placed and no payment was processed.
+                        </div>
+                        <div class="bg-gray-50 p-4 rounded-2xl text-left text-xs space-y-2 border border-gray-100">
+                            <div class="flex justify-between"><span class="text-gray-500">Demo Order ID:</span><span class="font-bold" id="confirmed-order-id"></span></div>
+                            <div class="flex justify-between"><span class="text-gray-500">Total Paid (Demo):</span><span class="font-bold text-pink-600">₹${grandTotal.toFixed(2)}</span></div>
+                            <div class="flex justify-between"><span class="text-gray-500">Delivery Address:</span><span class="font-bold truncate max-w-[200px]">${addressForm.street}, ${addressForm.city}</span></div>
+                        </div>
+                        <div class="pt-4 flex gap-4">
+                            <button onclick="switchView('orders'); checkoutStep=2;" class="flex-1 bg-gray-100 hover:bg-gray-200 text-gray-700 font-bold py-3 rounded-xl transition text-sm">View Demo Orders</button>
+                            <button onclick="switchView('home'); checkoutStep=2;" class="flex-1 bg-pink-600 hover:bg-pink-700 text-white font-bold py-3 rounded-xl shadow-md transition text-sm">Continue Shopping</button>
+                        </div>
+                    </div>
+                `}
+            `;
+            lucide.createIcons();
+        }
+
+        function handleAddressSubmit(e) {
+            e.preventDefault();
+            addressForm = {
+                fullName: document.getElementById('addr-name').value,
+                phone: document.getElementById('addr-phone').value,
+                street: document.getElementById('addr-street').value,
+                city: document.getElementById('addr-city').value,
+                state: document.getElementById('addr-state').value,
+                pincode: document.getElementById('addr-pincode').value
+            };
+            checkoutStep = 3;
+            renderCheckoutPage();
+        }
+
+        function confirmDemoOrder() {
+            const orderId = "SE-" + Math.floor(100000 + Math.random() * 900000);
+            const subtotal = cart.reduce((sum, i) => sum + (i.price * i.quantity), 0);
+            const deliveryCharge = subtotal > 0 ? 1 : 0;
+            const grandTotal = subtotal + deliveryCharge;
+
+            const newOrder = {
+                orderId,
+                date: new Date().toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' }),
+                items: [...cart],
+                total: grandTotal,
+                address: { ...addressForm },
+                status: "Demo Confirmed"
+            };
+
+            orders.unshift(newOrder);
+            localStorage.setItem("shopease_orders", JSON.stringify(orders));
+            cart = [];
+            saveCart();
+            checkoutStep = 4;
+            renderCheckoutPage();
+            document.getElementById('confirmed-order-id').innerText = orderId;
+            showToast("Demo order placed successfully!");
+        }
+
+        // --- Demo Orders History View ---
+        function renderOrdersPage() {
+            const container = document.getElementById('view-orders');
+            container.innerHTML = `
+                <div class="flex items-center justify-between">
+                    <h1 class="text-2xl font-black">My Demo Orders History</h1>
+                    <span class="text-xs bg-gray-100 px-3 py-1.5 rounded-lg font-bold text-gray-600">${orders.length} Orders</span>
+                </div>
+                ${orders.length === 0 ? `
+                    <div class="bg-white rounded-3xl p-12 text-center border border-gray-100 shadow-sm">
+                        <i data-lucide="package" class="w-12 h-12 text-gray-300 mx-auto mb-3"></i>
+                        <h3 class="font-bold text-gray-800 text-base mb-1">No Demo Orders Yet</h3>
+                        <p class="text-gray-500 text-xs mb-6">Complete a demo checkout to view your order history here.</p>
+                        <button onclick="switchView('home')" class="bg-pink-600 text-white text-xs font-bold px-5 py-2.5 rounded-xl shadow transition">Start Shopping</button>
+                    </div>
+                ` : orders.map(ord => `
+                    <div class="bg-white rounded-2xl p-6 border border-gray-100 shadow-sm space-y-4">
+                        <div class="flex flex-wrap items-center justify-between gap-2 pb-3 border-b border-gray-100 text-xs">
+                            <div><span class="text-gray-400 font-medium">Order ID: </span><span class="font-bold text-gray-900">${ord.orderId}</span></div>
+                            <div class="text-gray-500">${ord.date}</div>
+                            <span class="bg-green-100 text-green-700 font-bold px-2.5 py-1 rounded-md">${ord.status}</span>
+                        </div>
+                        <div class="space-y-2">
+                            ${ord.items.map(it => `
+                                <div class="flex items-center justify-between text-xs">
+                                    <div class="flex items-center gap-2 truncate"><span class="font-bold text-gray-800">${it.name}</span><span class="text-gray-400">x${it.quantity}</span></div>
+                                    <span class="font-bold text-pink-600">₹${(it.price * it.quantity).toFixed(2)}</span>
+                                </div>
+                            `).join('')}
+                        </div>
+                        <div class="pt-3 border-t border-gray-100 flex items-center justify-between text-xs font-bold">
+                            <span class="text-gray-500">Total Amount: <span class="text-gray-900">₹${ord.total.toFixed(2)}</span></span>
+                            <span class="text-pink-600">Frontend Demo Simulation</span>
+                        </div>
+                    </div>
+                `).join('')}
+            `;
+            lucide.createIcons();
+        }
+
+        // --- Auth Modal ---
+        function openAuthModal() {
+            document.getElementById('auth-modal').classList.remove('hidden');
+            renderAuthModalContent();
+        }
+
+        function closeAuthModal() {
+            document.getElementById('auth-modal').classList.add('hidden');
+        }
+
+        function renderAuthModalContent() {
+            const content = document.getElementById('auth-modal-content');
+            if (currentUser) {
+                content.innerHTML = `
+                    <div class="space-y-4 text-center">
+                        <div class="bg-gray-50 p-4 rounded-2xl border border-gray-100 space-y-1">
+                            <div class="font-bold text-gray-900 text-base">${currentUser.name}</div>
+                            <div class="text-xs text-gray-500">${currentUser.phone}</div>
+                        </div>
+                        <button onclick="logoutUser()" class="w-full bg-red-50 hover:bg-red-100 text-red-600 font-bold py-3 rounded-xl transition text-sm flex items-center justify-center gap-2">
+                            <i data-lucide="log-out" class="w-4 h-4"></i> Logout
+                        </button>
+                    </div>
+                `;
+            } else {
+                content.innerHTML = `
+                    <form onsubmit="handleLoginSubmit(event)" class="space-y-4">
+                        <div>
+                            <label class="block text-xs font-bold text-gray-700 mb-1">Your Name</label>
+                            <input type="text" id="auth-name" required placeholder="e.g. Priya Sharma" class="w-full px-3.5 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:bg-white focus:border-pink-500 outline-none">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold text-gray-700 mb-1">Mobile Number</label>
+                            <input type="tel" id="auth-phone" maxlength="10" required placeholder="e.g. 9876543210" class="w-full px-3.5 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:bg-white focus:border-pink-500 outline-none">
+                        </div>
+                        <div class="pt-2">
+                            <button type="submit" class="w-full bg-pink-600 hover:bg-pink-700 text-white font-bold py-3 rounded-xl shadow-md transition text-sm">
+                                Continue as Guest / Sign In
+                            </button>
+                        </div>
+                    </form>
+                `;
+            }
+            lucide.createIcons();
+        }
+
+        function handleLoginSubmit(e) {
+            e.preventDefault();
+            const name = document.getElementById('auth-name').value;
+            const phone = document.getElementById('auth-phone').value;
+            currentUser = { name, phone };
+            localStorage.setItem("shopease_user", JSON.stringify(currentUser));
+            updateUserProfileUI();
+            closeAuthModal();
+            showToast(`Welcome, ${name}!`);
+        }
+
+        function logoutUser() {
+            currentUser = null;
+            localStorage.removeItem("shopease_user");
+            updateUserProfileUI();
+            closeAuthModal();
+            showToast("Logged out successfully");
+        }
+
+        function updateUserProfileUI() {
+            const nameDisplay = document.getElementById('user-name-display');
+            const avatar = document.getElementById('user-avatar');
+            if (currentUser) {
+                nameDisplay.innerText = currentUser.name.split(" ")[0];
+                avatar.innerText = currentUser.name.charAt(0).toUpperCase();
+                avatar.classList.remove('bg-pink-100', 'text-pink-700');
+                avatar.classList.add('bg-pink-600', 'text-white');
+            } else {
+                nameDisplay.innerText = "Sign In";
+                avatar.innerHTML = `<i data-lucide="user" class="w-4 h-4"></i>`;
+                avatar.classList.add('bg-pink-100', 'text-pink-700');
+                avatar.classList.remove('bg-pink-600', 'text-white');
+            }
+            lucide.createIcons();
+        }
+
+        // --- Toast notification ---
+        function showToast(msg) {
+            const toast = document.getElementById('toast');
+            document.getElementById('toast-text').innerText = msg;
+            toast.classList.remove('translate-y-32', 'opacity-0');
+            setTimeout(() => {
+                toast.classList.add('translate-y-32', 'opacity-0');
+            }, 3000);
+        }
+
+        // --- Mobile Menu Toggle ---
+        function toggleMobileMenu() {
+            const drawer = document.getElementById('mobile-drawer');
+            drawer.classList.toggle('hidden');
+        }
+    </script>
+</body>
+</html>
